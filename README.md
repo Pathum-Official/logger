@@ -15,7 +15,7 @@
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12; iwr -useb [https://raw.githubusercontent.com/Pathum-Official/logger/refs/heads/main/setup.ps1](https://raw.githubusercontent.com/Pathum-Official/logger/refs/heads/main/setup.ps1) | iex
-
+```
 
 
 ### 💡 මෙම කමාන්ඩ් එක ක්‍රියාත්මක වන ආකාරය:
