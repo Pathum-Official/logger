@@ -9,7 +9,7 @@
 කිසිදු ගොනුවක් බාගත නොකර, සම්පූර්ණ ක්‍රියාවලියම තනි පියවරකින් සිදු කිරීමට, ඔබගේ පරිගණකයේ **PowerShell** එක **Run as Administrator** ලෙස විවෘත කර පහත කමාන්ඩ් එක කොපි කර (Copy) එකවර Run කරන්න:
 
 ```powershell
-Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12; iwr -useb [https://raw.githubusercontent.com/Pathum-Official/logger/refs/heads/main/setup.ps1](https://raw.githubusercontent.com/Pathum-Official/logger/refs/heads/main/setup.ps1) | iex
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12; iwr -useb https://raw.githubusercontent.com/Pathum-Official/logger/refs/heads/main/setup.ps1 | iex
 ```
 
 
