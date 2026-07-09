@@ -53,49 +53,50 @@ try {
     Exit
 }
 
-# 3. Install requirements (Fixed & Improved)
+# 3. Install requirements
 Write-Host "[*] Installing required Python packages..." -ForegroundColor Yellow
 Set-Location $installDir
 
-# Update pip and core tools
 python -m pip install --upgrade pip setuptools wheel --quiet
 
-# Correct argument passing using array (This fixes the previous error)
-$pipArgs = @(
-    "-m", "pip", "install",
-    "-r", "requirements.txt",
-    "--no-cache-dir",
-    "--timeout", "180",
-    "--retries", "10",
-    "--quiet"
-)
-
+$pipArgs = @("-m", "pip", "install", "-r", "requirements.txt", "--no-cache-dir", "--timeout", "180", "--retries", "10", "--quiet")
 $installResult = & python $pipArgs
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "[+] All packages installed successfully." -ForegroundColor Green
 } else {
-    Write-Host "[!] Installation had issues. Trying alternative method..." -ForegroundColor Yellow
+    Write-Host "[!] Installation had issues. Trying alternative..." -ForegroundColor Yellow
     python -m pip install -r requirements.txt --no-cache-dir --timeout 200 --retries 15
 }
 
-# 4. Add to Windows Startup
-Write-Host "[*] Setting up Windows Startup..." -ForegroundColor Yellow
+# 4. Create start_logger.bat
+Write-Host "[*] Creating startup batch file..." -ForegroundColor Yellow
 
-$pythonwPath = (Get-Command pythonw -ErrorAction SilentlyContinue).Source
-if (-not $pythonwPath) {
-    $pythonwPath = "$env:USERPROFILE\AppData\Local\Programs\Python\Python312\pythonw.exe"
-    if (!(Test-Path $pythonwPath)) {
-        $pythonwPath = "pythonw"
-    }
-}
+$batContent = @'
+@echo off
+:: Silent Logger Starter
+set PYTHONW=C:\Users\pkpat\AppData\Local\Programs\Python\Python312\pythonw.exe
+set SCRIPT=C:\Users\pkpat\AppData\Local\WindowsLogger\logger.py
+
+if not exist "%PYTHONW%" (
+    set PYTHONW=pythonw
+)
+
+start "" "%PYTHONW%" "%SCRIPT%"
+'@
+
+$batPath = "$installDir\start_logger.bat"
+$batContent | Out-File -FilePath $batPath -Encoding UTF8 -Force
+Write-Host "[+] Batch file created successfully." -ForegroundColor Green
+
+# 5. Add .bat file to Windows Startup
+Write-Host "[*] Adding to Windows Startup..." -ForegroundColor Yellow
 
 $runKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
-$shortcutCommand = "`"$pythonwPath`" `"$installDir\logger.py`""
-
-Set-ItemProperty -Path $runKey -Name "WindowsBackgroundLogger" -Value $shortcutCommand -ErrorAction SilentlyContinue
+Set-ItemProperty -Path $runKey -Name "WindowsBackgroundLogger" -Value "`"$batPath`"" -ErrorAction SilentlyContinue
 
 Write-Host "=============================================" -ForegroundColor Green
 Write-Host "[✓] Setup completed successfully! Logger is now active." -ForegroundColor Green
 Write-Host "[i] Installation folder: $installDir" -ForegroundColor Cyan
+Write-Host "[i] Startup method: start_logger.bat" -ForegroundColor Cyan
 Write-Host "=============================================" -ForegroundColor Green
